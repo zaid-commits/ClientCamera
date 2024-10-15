@@ -21,10 +21,10 @@ app.use(cors(corsOptions));
 // Serve the frontend build files
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Define your OpenCV projects with the correct paths
+// Define your OpenCV projects with absolute paths
 const projects = [
-  { name: "Face Detection", script: "backend/opencv_projects/face_detection.py" },
-  { name: "Edge Detection", script: "backend/opencv_projects/edge_detection.py" }
+  { name: "Face Detection", script: path.join(__dirname, 'opencv_projects', 'face_detection.py') },
+  { name: "Edge Detection", script: path.join(__dirname, 'opencv_projects', 'edge_detection.py') }
 ];
 
 // API to get projects
