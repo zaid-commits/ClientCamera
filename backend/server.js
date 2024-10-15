@@ -27,30 +27,43 @@ const projects = [
   { name: "Edge Detection", script: path.join(__dirname, 'opencv_projects', 'edge_detection.py') }
 ];
 
+console.log('Projects:', projects);
+
 // API to get projects
 app.get('/projects', (req, res) => {
+  console.log('GET /projects');
   res.json(projects);
 });
 
 // API to run a project
 app.post('/run/:projectName', (req, res) => {
+  console.log(`POST /run/${req.params.projectName}`);
   const project = projects.find(p => p.name === req.params.projectName);
   if (project) {
     if (pythonProcess) {
       pythonProcess.kill();
     }
+    console.log(`Running script: ${project.script}`);
     pythonProcess = spawn('python', [project.script]);
 
     pythonProcess.stdout.on('data', (data) => {
-      io.emit('processedFrame', data.toString());
+      console.log(`Python stdout: ${data}`);
+      io.emit('scriptOutput', data.toString());
     });
 
     pythonProcess.stderr.on('data', (data) => {
-      console.error(`Python script error: ${data}`);
+      console.error(`Python stderr: ${data}`);
+      io.emit('scriptError', data.toString());
+    });
+
+    pythonProcess.on('close', (code) => {
+      console.log(`Python process exited with code ${code}`);
+      io.emit('scriptEnd', `Script exited with code ${code}`);
     });
 
     res.json({ message: `${project.name} is running!` });
   } else {
+    console.log(`Project not found: ${req.params.projectName}`);
     res.status(404).json({ error: 'Project not found' });
   }
 });
